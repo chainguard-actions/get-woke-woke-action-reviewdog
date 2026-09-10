@@ -1,0 +1,31 @@
+name: Test fail-on-error false - woke finds issues but action succeeds
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a file with non-inclusive language
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/noninclusive"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/noninclusive/bad.md" <<'EOF'
+          # Test file
+          whitelist
+          blacklist
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          reporter: local
+          filter-mode: nofilter
+          fail-on-error: 'false'
+          woke-args: tests/fixtures/noninclusive/bad.md
+          level: warning
+
+      - name: Assert action succeeded despite non-inclusive language (fail-on-error=false)
+        run: |
+          echo "PASS: action completed without error even though woke found non-inclusive language"

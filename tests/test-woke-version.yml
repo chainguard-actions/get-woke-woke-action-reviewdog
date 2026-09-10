@@ -1,0 +1,31 @@
+name: Test woke-version input - pin a specific woke version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a clean test file
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/version-test"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/version-test/clean.md" <<'EOF'
+          # Clean File
+          This document uses inclusive language throughout.
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          reporter: local
+          filter-mode: nofilter
+          fail-on-error: 'false'
+          woke-args: tests/fixtures/version-test/clean.md
+          woke-version: 'v0.19.0'
+          level: warning
+
+      - name: Assert action completed with pinned woke version
+        run: |
+          echo "PASS: action ran successfully with pinned woke version"

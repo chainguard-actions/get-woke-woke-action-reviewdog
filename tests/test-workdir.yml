@@ -1,0 +1,31 @@
+name: Test workdir input - run woke in a specific working directory
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a subdirectory with a clean file
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/workdir-test"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/workdir-test/readme.md" <<'EOF'
+          # Hello
+          This is a clean document with no non-inclusive language.
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          reporter: local
+          filter-mode: nofilter
+          fail-on-error: 'false'
+          workdir: tests/fixtures/workdir-test
+          woke-args: readme.md
+          level: warning
+
+      - name: Assert action completed with workdir set
+        run: |
+          echo "PASS: action ran successfully with custom workdir"

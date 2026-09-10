@@ -1,0 +1,30 @@
+name: Test basic usage - woke with local reporter
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a clean test file with no non-inclusive language
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/clean"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/clean/sample.md" <<'EOF'
+          # Hello World
+          This is a clean file with no non-inclusive language.
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          reporter: local
+          filter-mode: nofilter
+          fail-on-error: 'false'
+          woke-args: tests/fixtures/clean/sample.md
+          level: warning
+
+      - name: Assert action completed successfully
+        run: |
+          echo "PASS: action ran without error"
